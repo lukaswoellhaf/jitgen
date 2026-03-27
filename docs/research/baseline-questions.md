@@ -59,6 +59,17 @@
 ## Open Source Concerns
 - What is the scope of the tool? A CLI? A GitHub Action? A standalone service?
   > A GitHub Action. No separate server, CLI, or infrastructure required. Installed by adding a workflow file to any repository.
+  >
+  > **Technology stack:**
+  > | Concern | Technology |
+  > |---|---|
+  > | Core tool | Go |
+  > | LLM API calls | `net/http` (stdlib) |
+  > | Git operations | `exec.Command` calling `git` |
+  > | Test execution | `exec.Command` calling the repo's test command |
+  > | GitHub Action packaging | Docker action (Go binary compiled into a minimal container image) |
+  > | Action inputs/outputs | `action.yml` + environment variables |
+  > | Distribution | GitHub Actions marketplace |
 - How do I make it language-agnostic vs. focusing on one ecosystem first?
 - How do I handle LLM API key configuration securely?
 - What's the minimum viable version that demonstrates value to early adopters?

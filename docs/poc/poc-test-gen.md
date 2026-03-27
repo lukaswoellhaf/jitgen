@@ -6,6 +6,7 @@
 - **Validation strategy:** manually introduce a known regression in a branch, open a PR, verify jitgen catches it
 - **LLM:** Mistral Codestral via API key
 - **Execution command:** `go test ./...`
+- **Implementation language:** Go (single static binary, packaged as a Docker-based GitHub Action)
 
 ---
 
