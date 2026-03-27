@@ -2,7 +2,13 @@
 
 ## Core Architecture
 - What is my target language/ecosystem (Java, Python, JS, etc.)? The approach differs significantly per language.
-  > The LLM is language-agnostic, but everything around it is not. Test execution (pytest, jest, go test, etc.), scaffolding (valid file structure per language), environment isolation, and dependency resolution are all language-specific. The LLM writes the test logic; running it is an entirely different concern.
+  > The LLM infers language, framework, conventions, and assertion style from existing test files provided as context — no per-language configuration needed. Generation is language-agnostic.
+  >
+  > Execution is not: the Actions runner needs a shell command to run the test. This is solved by reading the repo's own `.github/workflows/` to extract the existing test command (it's already there). Escape hatch: a single configurable input (`test-command`) for non-standard setups.
+  >
+  > The "pass on parent" check acts as a free scaffolding validator — if the LLM generates a broken test (bad import, wrong fixture), it fails on the parent and is discarded automatically, before any human sees it.
+  >
+  > **Edge cases to handle:** monorepos (scope detection to files touched by the diff), non-standard test locations (rely on existing test file examples in context), test file injection and cleanup (place the generated file where the runner picks it up, remove after).
 
 - How will I detect which tests pass/fail on the parent vs. child version of the code?
   > A generated test is only a valid catch if it **passes on the parent AND fails on the child**. Running against both versions is the core proof mechanism — a test that just fails on the child could be broken, testing something always broken, or have a bad import. The differential result is what makes it a catch. Run on parent first: if it fails, discard. If it passes, run on child: if it fails there, it's a candidate catch.
