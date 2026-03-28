@@ -46,3 +46,5 @@ Everything else is plumbing. Nothing further is worth building if this doesn't w
 - Merge draft PR → test lands permanently on the feature branch
 
 **Success criteria:** full flow works on the gin fork — catch reported, engineer can dismiss or confirm via the draft PR.
+
+```
