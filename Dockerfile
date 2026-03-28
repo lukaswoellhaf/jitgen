@@ -5,7 +5,7 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=0 go build -o /jitgen ./cmd/jitgen
 
-FROM alpine:3.21
+FROM golang:1.25-alpine
 RUN apk add --no-cache git \
     && git config --system --add safe.directory /github/workspace \
     && git config --system user.name "jitgen" \
