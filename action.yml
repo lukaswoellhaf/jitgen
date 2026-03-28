@@ -1,10 +1,6 @@
 name: 'jitgen'
 description: 'Just-in-time LLM regression test generation'
 inputs:
-  repo-path:
-    description: 'Path to the git repository'
-    required: false
-    default: '.'
   parent-ref:
     description: 'Parent git ref (base branch)'
     required: true
@@ -29,7 +25,7 @@ runs:
     LLM_MODEL: ${{ inputs.llm-model }}
   args:
     - --repo
-    - ${{ inputs.repo-path }}
+    - /github/workspace
     - --parent
     - ${{ inputs.parent-ref }}
     - --child
