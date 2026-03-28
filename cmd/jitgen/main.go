@@ -3,19 +3,30 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
+	"log"
 	"os"
+	"strings"
 
 	"github.com/lukaswoellhaf/jitgen/internal/diff"
 	"github.com/lukaswoellhaf/jitgen/internal/llm"
 	"github.com/lukaswoellhaf/jitgen/internal/prompt"
+	"github.com/lukaswoellhaf/jitgen/internal/runner"
 )
+
+var dbg = log.New(os.Stderr, "[debug] ", 0)
 
 func main() {
 	repo := flag.String("repo", ".", "path to the git repository")
 	parent := flag.String("parent", "", "parent git ref (required)")
 	child := flag.String("child", "", "child git ref (required)")
 	output := flag.String("output", "", "output file path (default: stdout)")
+	debug := flag.Bool("debug", false, "show prompts, LLM response, and test output")
 	flag.Parse()
+
+	if !*debug {
+		dbg.SetOutput(io.Discard)
+	}
 
 	if *parent == "" || *child == "" {
 		fmt.Fprintln(os.Stderr, "error: --parent and --child are required")
@@ -50,6 +61,8 @@ func main() {
 		fmt.Fprintln(os.Stderr, "no diff found between refs")
 		os.Exit(0)
 	}
+	touchedFiles := diff.ParseTouchedFiles(diffContent)
+	dbg.Printf("diff size: %d bytes, touched files: %s", len(diffContent), strings.Join(touchedFiles, ", "))
 
 	// 2. Gather test context from sibling test files
 	fmt.Fprintln(os.Stderr, "gathering test context...")
@@ -62,6 +75,9 @@ func main() {
 	// 3. Build prompt and call LLM
 	systemPrompt, userPrompt := prompt.BuildCatchingTestPrompt(diffContent, testContexts)
 
+	dbg.Printf("=== SYSTEM PROMPT ===\n%s", systemPrompt)
+	dbg.Printf("=== USER PROMPT ===\n%s", userPrompt)
+
 	client := llm.NewClient(apiKey, endpoint, model)
 	fmt.Fprintf(os.Stderr, "calling %s (%s)...\n", client.Model, client.Endpoint)
 	response, err := client.Generate(systemPrompt, userPrompt)
@@ -70,10 +86,53 @@ func main() {
 		os.Exit(1)
 	}
 
+	dbg.Printf("=== RAW LLM RESPONSE ===\n%s", response)
+
 	// 4. Extract Go code from response
 	code := prompt.ExtractGoCode(response)
 
-	// 5. Output
+	dbg.Printf("=== EXTRACTED TEST CODE ===\n%s", code)
+
+	// 5. Run differential test (parent must pass, child must fail)
+	fmt.Fprintln(os.Stderr, "running differential test...")
+	result, err := runner.Run(*repo, *parent, *child, code, diffContent)
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "error: runner failed: %v\n", err)
+		os.Exit(1)
+	}
+
+	// 6. Report result
+	dbg.Printf("=== PARENT TEST OUTPUT ===\n%s", result.ParentOutput)
+	if result.ParentPassed {
+		fmt.Fprintln(os.Stderr, "parent: PASS")
+	} else {
+		fmt.Fprintln(os.Stderr, "parent: FAIL")
+	}
+
+	dbg.Printf("=== CHILD TEST OUTPUT ===\n%s", result.ChildOutput)
+	if result.ChildFailed {
+		fmt.Fprintln(os.Stderr, "child:  FAIL")
+	} else {
+		fmt.Fprintln(os.Stderr, "child:  PASS")
+	}
+
+	if result.IsCatch {
+		fmt.Fprintln(os.Stderr, "result: CATCH")
+	} else {
+		fmt.Fprintln(os.Stderr, "result: DISCARD")
+	}
+
+	// 7. If CATCH, create a temp branch with the test in the target repo
+	if result.IsCatch {
+		branch, err := runner.CreateCatchBranch(*repo, *child, code, diffContent)
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "warning: could not create catch branch: %v\n", err)
+		} else {
+			fmt.Fprintf(os.Stderr, "catch branch: %s\n", branch)
+		}
+	}
+
+	// 8. Output generated test if requested
 	if *output != "" {
 		if err := os.WriteFile(*output, []byte(code+"\n"), 0644); err != nil {
 			fmt.Fprintf(os.Stderr, "error writing output: %v\n", err)

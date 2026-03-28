@@ -24,7 +24,7 @@ func Extract(repoPath, parentRef, childRef string) (string, error) {
 // by the diff, reads their contents, and returns them as context strings.
 // Returns at most maxFiles test files.
 func GatherTestContext(repoPath, diffOutput string, maxFiles int) ([]string, error) {
-	touched := parseTouchedFiles(diffOutput)
+	touched := ParseTouchedFiles(diffOutput)
 	seen := map[string]bool{}
 	var contexts []string
 
@@ -62,8 +62,8 @@ func GatherTestContext(repoPath, diffOutput string, maxFiles int) ([]string, err
 	return contexts, nil
 }
 
-// parseTouchedFiles extracts file paths from diff --- a/... and +++ b/... headers.
-func parseTouchedFiles(diffOutput string) []string {
+// ParseTouchedFiles extracts file paths from diff --- a/... and +++ b/... headers.
+func ParseTouchedFiles(diffOutput string) []string {
 	seen := map[string]bool{}
 	var files []string
 
