@@ -1,0 +1,37 @@
+name: 'jitgen'
+description: 'Just-in-time LLM regression test generation'
+inputs:
+  repo-path:
+    description: 'Path to the git repository'
+    required: false
+    default: '.'
+  parent-ref:
+    description: 'Parent git ref (base branch)'
+    required: true
+  child-ref:
+    description: 'Child git ref (feature branch head)'
+    required: true
+  llm-api-key:
+    description: 'API key for the LLM provider'
+    required: true
+  llm-endpoint:
+    description: 'LLM API endpoint URL'
+    required: true
+  llm-model:
+    description: 'LLM model name'
+    required: true
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  env:
+    LLM_API_KEY: ${{ inputs.llm-api-key }}
+    LLM_ENDPOINT: ${{ inputs.llm-endpoint }}
+    LLM_MODEL: ${{ inputs.llm-model }}
+  args:
+    - --repo
+    - ${{ inputs.repo-path }}
+    - --parent
+    - ${{ inputs.parent-ref }}
+    - --child
+    - ${{ inputs.child-ref }}
+    - --debug
