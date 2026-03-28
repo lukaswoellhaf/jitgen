@@ -15,7 +15,7 @@ const testFileName = "jitgen_catch_test.go"
 // Result holds the outcome of a differential test run.
 type Result struct {
 	ParentPassed bool
-	ChildFailed  bool
+	ChildPassed  bool
 	IsCatch      bool
 	ParentOutput string
 	ChildOutput  string
@@ -64,11 +64,11 @@ func Run(repoPath, parentRef, childRef, testCode, diffOutput string) (*Result, e
 
 	result := &Result{
 		ParentPassed: parentPassed,
-		ChildFailed:  !childPassed,
+		ChildPassed:  childPassed,
 		ParentOutput: parentOutput,
 		ChildOutput:  childOutput,
 	}
-	result.IsCatch = result.ParentPassed && result.ChildFailed
+	result.IsCatch = result.ParentPassed && !result.ChildPassed
 
 	return result, nil
 }
@@ -164,4 +164,14 @@ func CreateCatchBranch(repoPath, childRef, testCode, diffOutput string) (string,
 	}
 
 	return branchName, nil
+}
+
+// PushCatchBranch pushes the given branch to the remote.
+func PushCatchBranch(repoPath, branchName string) error {
+	cmd := exec.Command("git", "push", "origin", branchName, "--force")
+	cmd.Dir = repoPath
+	if out, err := cmd.CombinedOutput(); err != nil {
+		return fmt.Errorf("git push: %s: %s", err, string(out))
+	}
+	return nil
 }

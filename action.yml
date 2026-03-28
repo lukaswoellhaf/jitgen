@@ -7,6 +7,9 @@ inputs:
   child-ref:
     description: 'Child git ref (feature branch head)'
     required: true
+  pr-number:
+    description: 'Pull request number to comment on'
+    required: false
   llm-api-key:
     description: 'API key for the LLM provider'
     required: true
@@ -16,6 +19,10 @@ inputs:
   llm-model:
     description: 'LLM model name'
     required: true
+  github-token:
+    description: 'GitHub token for pushing branches and creating PRs'
+    required: false
+    default: ${{ github.token }}
 runs:
   using: 'docker'
   image: 'Dockerfile'
@@ -23,6 +30,8 @@ runs:
     LLM_API_KEY: ${{ inputs.llm-api-key }}
     LLM_ENDPOINT: ${{ inputs.llm-endpoint }}
     LLM_MODEL: ${{ inputs.llm-model }}
+    GITHUB_TOKEN: ${{ inputs.github-token }}
+    GITHUB_PR_NUMBER: ${{ inputs.pr-number }}
   args:
     - --repo
     - /github/workspace
