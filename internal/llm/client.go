@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"time"
 )
 
 type Client struct {
@@ -40,7 +41,7 @@ type response struct {
 	} `json:"choices"`
 }
 
-// Generate sends a system+user prompt to Codestral and returns the response content.
+// Generate sends a system+user prompt to the LLM and returns the response content.
 func (c *Client) Generate(systemPrompt, userPrompt string) (string, error) {
 	reqBody := request{
 		Model: c.Model,
@@ -62,7 +63,8 @@ func (c *Client) Generate(systemPrompt, userPrompt string) (string, error) {
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+c.APIKey)
 
-	resp, err := http.DefaultClient.Do(req)
+	httpClient := &http.Client{Timeout: 2 * time.Minute}
+	resp, err := httpClient.Do(req)
 	if err != nil {
 		return "", fmt.Errorf("API call failed: %w", err)
 	}

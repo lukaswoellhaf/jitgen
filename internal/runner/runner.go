@@ -125,6 +125,17 @@ func CreateCatchBranch(repoPath, childRef, testCode, diffOutput string) (string,
 	worktreeDir := filepath.Join(tmpDir, "catch")
 	defer removeWorktree(repoPath, worktreeDir)
 
+	// Delete stale branch from a previous run, if it exists
+	checkCmd := exec.Command("git", "rev-parse", "--verify", branchName)
+	checkCmd.Dir = repoPath
+	if checkCmd.Run() == nil {
+		delCmd := exec.Command("git", "branch", "-D", branchName)
+		delCmd.Dir = repoPath
+		if out, err := delCmd.CombinedOutput(); err != nil {
+			return "", fmt.Errorf("delete stale branch: %s: %s", err, string(out))
+		}
+	}
+
 	// Create a new branch from childRef
 	cmd := exec.Command("git", "worktree", "add", "-b", branchName, worktreeDir, childRef)
 	cmd.Dir = repoPath
