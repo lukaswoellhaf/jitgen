@@ -1,0 +1,12 @@
+# Environment variables
+.env
+.envrc
+
+# Go toolchain
+*.test
+*.out
+
+# Go binary (root-level only)
+/jitgen
+
+jitgen_stderr.log
