@@ -26,7 +26,7 @@ func publishCatch(cfg Config, branch string) {
 		"**Close** this PR to dismiss (false positive).\n"+
 		"**Merge** to keep the test on `%s`.", cfg.HeadRef)
 
-	draftNum, draftURL, err := gh.CreateDraftPR(ctx, branch, cfg.HeadRef, title, body)
+	_, draftURL, err := gh.CreateDraftPR(ctx, branch, cfg.HeadRef, title, body)
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not create draft PR: %v\n", err)
 		return
@@ -35,10 +35,10 @@ func publishCatch(cfg Config, branch string) {
 
 	comment := fmt.Sprintf(
 		"**jitgen** found a potential regression and generated a catching test.\n\n"+
-			"Review it here: %s (draft PR #%d)\n\n"+
+			"Review the draft PR here: %s\n\n"+
 			"- **Close** the draft PR to dismiss\n"+
 			"- **Merge** the draft PR to keep the test",
-		draftURL, draftNum)
+		draftURL)
 	if err := gh.CreateComment(ctx, cfg.PullRequestNumber, comment); err != nil {
 		fmt.Fprintf(os.Stderr, "warning: could not comment on PR: %v\n", err)
 	}

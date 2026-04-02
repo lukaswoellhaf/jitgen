@@ -30,7 +30,7 @@ type Config struct {
 	HeadRef           string
 }
 
-var dbg = log.New(io.Discard, "[debug] ", 0)
+var dbg = log.New(io.Discard, "[DEBUG] ", 0)
 
 // Run executes the full jitgen pipeline: diff → prompt → LLM → test → branch → publish.
 func Run(cfg Config) error {

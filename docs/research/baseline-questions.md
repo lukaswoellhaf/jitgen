@@ -1,7 +1,7 @@
 # Baseline Questions
 
 ## Core Architecture
-- What is my target language/ecosystem (Java, Python, JS, etc.)? The approach differs significantly per language.
+- What is the target language/ecosystem (Java, Python, JS, etc.)? The approach differs significantly per language.
   > The LLM infers language, framework, conventions, and assertion style from existing test files provided as context — no per-language configuration needed. Generation is language-agnostic.
   >
   > Execution is not: the Actions runner needs a shell command to run the test. This is solved by reading the repo's own `.github/workflows/` to extract the existing test command (it's already there). Escape hatch: a single configurable input (`test-command`) for non-standard setups.
@@ -55,25 +55,3 @@
   > GitHub Actions runner. No dedicated service or developer machine setup required.
 - How do I handle compute cost? LLM calls per diff can be expensive at scale.
 - Do I need to cache anything (e.g., parent-version test results)?
-
-## Open Source Concerns
-- What is the scope of the tool? A CLI? A GitHub Action? A standalone service?
-  > A GitHub Action. No separate server, CLI, or infrastructure required. Installed by adding a workflow file to any repository.
-  >
-  > **Technology stack:**
-  > | Concern | Technology |
-  > |---|---|
-  > | Core tool | Go |
-  > | LLM API calls | `net/http` (stdlib) |
-  > | Git operations | `exec.Command` calling `git` |
-  > | Test execution | `exec.Command` calling the repo's test command |
-  > | GitHub Action packaging | Docker action (Go binary compiled into a minimal container image) |
-  > | Action inputs/outputs | `action.yml` + environment variables |
-  > | Distribution | GitHub Actions marketplace |
-- How do I make it language-agnostic vs. focusing on one ecosystem first?
-- How do I handle LLM API key configuration securely?
-- What's the minimum viable version that demonstrates value to early adopters?
-- How do I write docs/examples so users can plug in their own test runners and LLMs?
-
-## Validation
-- How do I distinguish "the test correctly caught a bug" from "the test was just brittle"?

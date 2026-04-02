@@ -9,14 +9,14 @@ import (
 )
 
 type Client struct {
-	APIKey   string
+	ApiKey   string
 	Endpoint string
 	Model    string
 }
 
 func NewClient(apiKey, endpoint, model string) *Client {
 	return &Client{
-		APIKey:   apiKey,
+		ApiKey:   apiKey,
 		Endpoint: endpoint,
 		Model:    model,
 	}
@@ -60,7 +60,7 @@ func (c *Client) Generate(systemPrompt, userPrompt string) (string, error) {
 		return "", fmt.Errorf("create request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+c.APIKey)
+	req.Header.Set("Authorization", "Bearer "+c.ApiKey)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
@@ -86,5 +86,5 @@ func (c *Client) Generate(systemPrompt, userPrompt string) (string, error) {
 		return "", fmt.Errorf("no choices in response")
 	}
 
-	return result.Choices[0].Message.Content, nil
+	return result.Choices[0].Message.Content, nil // Currently only returns the first completion choice
 }

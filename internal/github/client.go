@@ -15,13 +15,13 @@ type Client struct {
 
 func New(token, owner, repo string) *Client {
 	return &Client{
-		gh:    github.NewClient(nil).WithAuthToken(token),
+		gh:    github.NewClient(nil).WithAuthToken(token), // Use default HTTP client with token auth
 		owner: owner,
 		repo:  repo,
 	}
 }
 
-// CreateDraftPR creates a draft pull request and returns its number and HTML URL.
+// CreateDraftPR creates a draft pull request and returns its PR number and HTML URL.
 func (c *Client) CreateDraftPR(ctx context.Context, head, base, title, body string) (int, string, error) {
 	pr, _, err := c.gh.PullRequests.Create(ctx, c.owner, c.repo, &github.NewPullRequest{
 		Title: &title,

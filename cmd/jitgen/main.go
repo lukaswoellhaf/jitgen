@@ -51,7 +51,7 @@ func main() {
 		Owner:             parts[0],
 		RepoName:          parts[1],
 		PullRequestNumber: prNumber,
-		HeadRef:           os.Getenv("GITHUB_HEAD_REF"),
+		HeadRef:           requireEnv("GITHUB_HEAD_REF"),
 	}
 
 	if err := orchestrator.Run(cfg); err != nil {

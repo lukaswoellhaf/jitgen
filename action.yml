@@ -9,7 +9,7 @@ inputs:
     required: true
   pr-number:
     description: 'Pull request number to comment on'
-    required: false
+    required: true
   llm-api-key:
     description: 'API key for the LLM provider'
     required: true

@@ -14,8 +14,6 @@
 
 **Goal:** validate that the LLM can generate a test that passes on the parent and fails on the child.
 
-Everything else is plumbing. Nothing further is worth building if this doesn't work reliably.
-
 **Inputs:**
 - A git diff (the suspected regression)
 - A few existing `_test.go` files from gin as style context
@@ -46,5 +44,3 @@ Everything else is plumbing. Nothing further is worth building if this doesn't w
 - Merge draft PR → test lands permanently on the feature branch
 
 **Success criteria:** full flow works on the gin fork — catch reported, engineer can dismiss or confirm via the draft PR.
-
-```
